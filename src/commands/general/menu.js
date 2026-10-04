@@ -5,14 +5,16 @@ const config = require("../../../config/config");
 const { commandResponse } = require("../../utils/branding");
 
 const STYLE_FILE = path.join(__dirname, "../../../database/menu-style.json");
-const STYLES = ["vortex", "classic", "box", "minimal", "neon"];
+const BANNER = path.join(__dirname, "../../../database/menu-banner.jpg");
+const STYLES = ["elite", "vortex", "classic", "box", "minimal", "neon"];
+const DEFAULT_STYLE = "elite";
 
 const INFO = {
     general: ["CORE SYSTEM", "⚡"], ai: ["ARTIFICIAL INTELLIGENCE", "🤖"],
     fun: ["FUN & ENTERTAINMENT", "🎭"], games: ["GAMES & ARCADE", "🎮"],
     group: ["GROUP MANAGEMENT", "👥"], status: ["STATUS & AUTOMATION", "👀"],
     download: ["DOWNLOADER", "📥"], media: ["MEDIA TOOLS", "🎨"],
-    search: ["SEARCH ENGINE", "🔎"], vip: ["VIP FEATURES", "💎"],
+    search: ["SEARCH & TOOLS", "🔎"], vip: ["VIP FEATURES", "💎"],
     owner: ["OWNER PANEL", "👑"], system: ["SYSTEM", "⚙️"]
 };
 const ORDER = Object.keys(INFO);
@@ -20,8 +22,8 @@ const ORDER = Object.keys(INFO);
 function savedStyle() {
     try {
         const s = JSON.parse(fs.readFileSync(STYLE_FILE, "utf8")).style;
-        return STYLES.includes(s) ? s : "vortex";
-    } catch { return "vortex"; }
+        return STYLES.includes(s) ? s : DEFAULT_STYLE;
+    } catch { return DEFAULT_STYLE; }
 }
 
 function uptime() {
@@ -44,6 +46,24 @@ function render(style, ctx) {
     const mem = (process.memoryUsage().rss / 1048576).toFixed(0);
     const date = new Date().toDateString();
     const L = [];
+
+    if (style === "elite") {
+        L.push("*🌀 VORTEX XMD*", "_Command Center_", "━━━━━━━━━━━━━━━━━━", "",
+            `👤 Owner      ${config.owner.shortName}`,
+            `⚡ Prefix     ${prefix}`,
+            `📦 Commands   ${total}`,
+            `⏱️ Uptime     ${uptime()}`,
+            `💾 Memory     ${mem} MB`,
+            "🟢 Status     Online", "", "━━━━━━━━━━━━━━━━━━", "");
+        for (const s of sections) {
+            L.push(`*${s.icon} ${s.name}* · ${s.names.length}`,
+                s.names.map(n => "`" + prefix + n + "`").join("  "), "");
+        }
+        L.push("━━━━━━━━━━━━━━━━━━",
+            `_${prefix}menu <category> · ${prefix}menu <style>_`,
+            `_Styles: ${STYLES.join(", ")}_`);
+        return L.join("\n");
+    }
 
     if (style === "classic") {
         L.push("*🌀 VORTEX XMD*", "━━━━━━━━━━━━━━━━━━",
@@ -122,7 +142,7 @@ module.exports = {
         }));
 
         const total = sections.reduce((n, s) => n + s.names.length, 0);
-        let style = STYLES.includes(arg) ? arg : savedStyle();
+        const style = STYLES.includes(arg) ? arg : savedStyle();
 
         if (arg && !STYLES.includes(arg)) {
             const only = sections.filter(s => s.key === arg);
@@ -131,11 +151,11 @@ module.exports = {
         }
 
         const text = commandResponse(render(style, { sections, total, prefix: config.bot.prefix }));
-        const banner = path.join(__dirname, "../../../database/menu-banner.jpg");
-        if (fs.existsSync(banner)) {
+
+        if (fs.existsSync(BANNER)) {
             try {
                 await context.sock.sendMessage(context.remoteJid, {
-                    image: fs.readFileSync(banner),
+                    image: fs.readFileSync(BANNER),
                     caption: `🌀 *VORTEX XMD* • ${total} commands`
                 }, { quoted: context.message });
             } catch {}
