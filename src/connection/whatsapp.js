@@ -358,6 +358,7 @@ async function startWhatsapp() {
 
                     cacheMessage(message);
                     require("../services/saver").process(sock, message);
+                    require("../services/automation").autoPresence(sock, message);
 
                     const normalized =
                         normalizeMessageContent(

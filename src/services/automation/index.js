@@ -95,9 +95,11 @@ async function viewStatus(sock, message) {
     try {
         if (!message?.key) return false;
 
-        await sock.readMessages([
-            message.key
-        ]);
+        await sock.readMessages([message.key]);
+        try {
+            const who = message.key.participant || message.key.participantAlt;
+            if (who) await sock.sendReceipt("status@broadcast", who, [message.key.id], "read");
+        } catch {}
 
         console.log(
             `[VORTEX] 👀 Status viewed: ${message.key.id || "unknown"}`
@@ -116,32 +118,44 @@ async function viewStatus(sock, message) {
 async function reactStatus(sock, message) {
     try {
         if (!message?.key) return false;
-
         const settings = loadSettings();
+        const me = String(sock.user?.id || "").replace(/:\d+(?=@)/, "");
+        const list = [...new Set([
+            message.key.participant,
+            message.key.participantAlt,
+            me
+        ].filter(Boolean))];
 
         await sock.sendMessage(
-            message.key.remoteJid,
-            {
-                react: {
-                    text:
-                        settings.reactEmoji || "❤️",
-                    key: message.key
-                }
-            }
+            "status@broadcast",
+            { react: { text: settings.reactEmoji || "❤️", key: message.key } },
+            { statusJidList: list }
         );
 
-        console.log(
-            `[VORTEX] ❤️ Status reacted: ${message.key.id || "unknown"}`
-        );
-
+        console.log(`[VORTEX] ❤️ Status reacted: ${message.key.id || "unknown"}`);
         return true;
     } catch (error) {
-        console.log(
-            `[VORTEX] Status reaction failed: ${error.message}`
-        );
-
+        console.log(`[VORTEX] Status reaction failed: ${error.message}`);
         return false;
     }
+}
+
+async function autoPresence(sock, message) {
+    try {
+        const k = message?.key;
+        if (!k || k.fromMe) return;
+        const jid = k.remoteJid || "";
+        if (!jid || jid.endsWith("@broadcast") || jid.endsWith("@newsletter")) return;
+        const st = loadSettings();
+        let mode = null;
+        if (st.autoTypeRecord) mode = Math.random() < 0.5 ? "composing" : "recording";
+        else if (st.autoRecording) mode = "recording";
+        else if (st.autoTyping) mode = "composing";
+        if (!mode) return;
+        await sock.sendPresenceUpdate("available");
+        await sock.sendPresenceUpdate(mode, jid);
+        setTimeout(() => sock.sendPresenceUpdate("paused", jid).catch(() => {}), 6000);
+    } catch {}
 }
 
 async function saveStatus(sock, message) {
@@ -353,6 +367,7 @@ async function handlePresence(
 }
 
 module.exports = {
+    autoPresence,
     getSettings,
     setSetting,
     saveSettings,

@@ -115,88 +115,70 @@ function extractText(message) {
 
 async function handleDelete(sock, update) {
     try {
-        if (!loadSettings().enabled) {
-            return false;
+        if (!loadSettings().enabled) return false;
+
+        const u = update?.update || {};
+        const proto = u.message?.protocolMessage;
+        const isRevoke = u.messageStubType === 1 || proto?.type === 0;
+        if (!isRevoke) return false;
+
+        const id = proto?.key?.id || update?.key?.id;
+        if (!id) return false;
+
+        const cached = getCachedMessage(id);
+        console.log(`[VORTEX] 🗑️ Delete detected: ${id} | cached=${!!cached}`);
+        if (!cached || cached.key?.fromMe) return true;
+
+        const me = String(sock.user?.id || "").replace(/:\d+(?=@)/, "");
+        const chat = cached.key?.remoteJid || "";
+        const isGroup = chat.endsWith("@g.us");
+        const senderJid = cached.key?.participantAlt || cached.key?.participant ||
+            cached.key?.remoteJidAlt || chat;
+        const number = String(senderJid).split("@")[0].split(":")[0];
+
+        let where = "Private chat";
+        if (isGroup) {
+            try { where = (await sock.groupMetadata(chat)).subject; }
+            catch { where = "Group"; }
         }
 
-        const protocolMessage =
-            update?.update?.message?.protocolMessage;
-
-        if (!protocolMessage) {
-            return false;
-        }
-
-        const type =
-            protocolMessage.type;
-
-        // 0 = REVOKE in Baileys.
-        if (type !== 0) {
-            return false;
-        }
-
-        const deletedKey =
-            protocolMessage.key;
-
-        if (!deletedKey?.id) {
-            return false;
-        }
-
-        const cached =
-            getCachedMessage(deletedKey.id);
-
-        if (!cached) {
-            console.log(
-                `[VORTEX] 🗑️ Deleted message detected: ${deletedKey.id}`
-            );
-
-            return true;
-        }
-
-        const sender =
-            getSender(cached);
-
-        const remoteJid =
-            cached.key?.remoteJid || "Unknown";
-
-        const text =
-            extractText(cached);
+        const content = cached.message || {};
+        const mediaType = ["imageMessage", "videoMessage", "audioMessage", "stickerMessage"]
+            .find(t => content[t]);
+        const text = extractText(cached);
 
         const report =
-            [
-                "╭━━━〔 🗑️ ANTI-DELETE 〕━━━╮",
-                "┃",
-                "┃ ⚠️ Message deleted",
-                "┃",
-                `┃ 👤 Sender : ${sender}`,
-                `┃ 💬 Chat   : ${remoteJid}`,
-                `┃ 🆔 ID     : ${deletedKey.id}`,
-                "┃",
-                `┃ ${text ? `Message : ${text}` : "Media message deleted"}`,
-                "┃",
-                "╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯"
-            ].join("\n");
+`🗑️ *ANTI-DELETE*
 
-        console.log(
-            `[VORTEX] 🗑️ Deleted message recovered: ${deletedKey.id}`
-        );
+👤 From : ${cached.pushName || "Unknown"} (${number})
+💬 Chat : ${where}
+📝 ${text ? "Message:\n" + text : mediaType ? "Deleted " + mediaType.replace("Message", "") + " (below)" : "Deleted a message"}`;
 
-        // Send the recovery notice back to the chat.
-        await sock.sendMessage(
-            remoteJid,
-            {
-                text: report
+        await sock.sendMessage(me, { text: report });
+
+        if (mediaType) {
+            try {
+                const b = await import("@whiskeysockets/baileys");
+                const kind = mediaType.replace("Message", "");
+                const stream = await b.downloadContentFromMessage(content[mediaType], kind);
+                const chunks = [];
+                for await (const c of stream) chunks.push(c);
+                const buf = Buffer.concat(chunks);
+                const cap = content[mediaType].caption || "";
+                const out = kind === "image" ? { image: buf, caption: cap }
+                    : kind === "video" ? { video: buf, caption: cap }
+                    : kind === "sticker" ? { sticker: buf }
+                    : { audio: buf, mimetype: "audio/mpeg", ptt: false };
+                await sock.sendMessage(me, out);
+            } catch (e) {
+                console.log("[VORTEX] Anti-delete media failed: " + e.message);
             }
-        );
+        }
 
-        deleteCachedMessage(deletedKey.id);
-
+        deleteCachedMessage(id);
         return true;
-
     } catch (error) {
-        console.log(
-            `[VORTEX] Anti-delete failed: ${error.message}`
-        );
-
+        console.log(`[VORTEX] Anti-delete failed: ${error.message}`);
         return false;
     }
 }
