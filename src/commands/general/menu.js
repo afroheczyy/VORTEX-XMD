@@ -6,8 +6,8 @@ const { commandResponse } = require("../../utils/branding");
 
 const STYLE_FILE = path.join(__dirname, "../../../database/menu-style.json");
 const BANNER = path.join(__dirname, "../../../database/menu-banner.jpg");
-const STYLES = ["elite", "vortex", "classic", "box", "minimal", "neon"];
-const DEFAULT_STYLE = "elite";
+const STYLES = ["app", "elite", "vortex", "classic", "box", "minimal", "neon"];
+const DEFAULT_STYLE = "app";
 
 const INFO = {
     general: ["CORE SYSTEM", "⚡"], ai: ["ARTIFICIAL INTELLIGENCE", "🤖"],
@@ -142,7 +142,12 @@ module.exports = {
         }));
 
         const total = sections.reduce((n, s) => n + s.names.length, 0);
-        const style = STYLES.includes(arg) ? arg : savedStyle();
+        let style = STYLES.includes(arg) ? arg : savedStyle();
+        if (style === "app" && arg && !STYLES.includes(arg)) style = "elite";
+        if (style === "app") {
+            await require("../../services/menunav").sendMain(context, sections, total, cats);
+            return null;
+        }
 
         if (arg && !STYLES.includes(arg)) {
             const only = sections.filter(s => s.key === arg);

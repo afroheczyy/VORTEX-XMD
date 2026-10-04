@@ -166,6 +166,11 @@ async function handleMessage(sock, message) {
 
     if (!parsed) {
         try {
+            if (await require("../services/menunav").handle(sock, message, text, handleMessage)) return true;
+        } catch (e) {
+            console.log("[VORTEX] Menu nav error: " + e.message);
+        }
+        try {
             await require("../services/chatbot").handle(sock, message, text);
         } catch (e) {
             console.log("[VORTEX] Chatbot hook error: " + e.message);

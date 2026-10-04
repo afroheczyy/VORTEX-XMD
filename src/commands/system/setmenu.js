@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { commandResponse } = require("../../utils/branding");
 const FILE = path.join(__dirname, "../../../database/menu-style.json");
-const STYLES = ["elite", "vortex", "classic", "box", "minimal", "neon"];
+const STYLES = ["app", "elite", "vortex", "classic", "box", "minimal", "neon"];
 
 module.exports = {
     name: "setmenu", aliases: ["menustyle"], category: "system",
