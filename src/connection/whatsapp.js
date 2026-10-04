@@ -361,6 +361,7 @@ async function startWhatsapp() {
                     require("../services/automation").autoPresence(sock, message);
                     require("../services/xp").track(sock, message);
                     require("../services/afk").track(sock, message);
+                    require("../services/chatbot/voice").process(sock, message);
 
                     const normalized =
                         normalizeMessageContent(
