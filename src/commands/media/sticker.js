@@ -80,7 +80,7 @@ module.exports = {
 
             await context.sock.sendMessage(
                 context.remoteJid,
-                { sticker: fs.readFileSync(outFile) },
+                { sticker: require("../../utils/stickerexif").addExif(fs.readFileSync(outFile)) },
                 { quoted: context.message }
             );
             return null;
