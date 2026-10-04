@@ -436,6 +436,7 @@ async function startWhatsapp() {
     );
 
     require("../services/alerts").init(sock);
+    require("../services/autobio").init(sock);
     return sock;
 }
 
