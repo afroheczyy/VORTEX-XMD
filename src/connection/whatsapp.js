@@ -433,6 +433,7 @@ async function startWhatsapp() {
         }
     );
 
+    require("../services/alerts").init(sock);
     return sock;
 }
 
