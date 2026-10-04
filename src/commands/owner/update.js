@@ -17,7 +17,11 @@ module.exports = {
             { text: commandResponse(t) }, { quoted: context.message });
 
         if (!fs.existsSync(path.join(ROOT, ".git")))
-            return commandResponse("❌ This server isn't linked to GitHub yet.\nDo the one-time setup first.");
+            {
+            await say("🔄 Restarting. The panel will pull the latest code from GitHub on startup...");
+            setTimeout(() => process.exit(1), 2000);
+            return null;
+        }
 
         try {
             await run("git", ["fetch", "origin"]);
