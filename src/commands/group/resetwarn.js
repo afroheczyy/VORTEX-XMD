@@ -4,6 +4,7 @@ const {
 
 module.exports = {
     name: "resetwarn",
+    category: "group",
     aliases: ["resetwarnings"],
     permission: "admin",
 

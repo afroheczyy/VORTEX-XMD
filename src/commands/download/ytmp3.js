@@ -5,6 +5,7 @@ const downloader =
 
 module.exports = {
     name: "ytmp3",
+    category: "download",
 
     aliases: [
         "song",

@@ -10,6 +10,7 @@ const {
 
 module.exports = {
     name: "gsettings",
+    category: "group",
     aliases: ["groupsettings", "groupconfig"],
     permission: "admin",
 

@@ -6,6 +6,7 @@ const {
 
 module.exports = {
     name: "warn",
+    category: "group",
     aliases: ["warning"],
     permission: "admin",
 

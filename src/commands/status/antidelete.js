@@ -2,6 +2,7 @@ const antidelete = require("../../services/antidelete");
 
 module.exports = {
     name: "antidelete",
+    category: "status",
 
     aliases: [
         "antidel",

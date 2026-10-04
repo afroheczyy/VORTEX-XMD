@@ -5,6 +5,7 @@ const downloader =
 
 module.exports = {
     name: "ytmp4",
+    category: "download",
 
     aliases: [
         "video",

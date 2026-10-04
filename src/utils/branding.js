@@ -61,4 +61,4 @@ function commandResponse(text) {
     return clean + footer();
 }
 
-module.exports = { footer, header, box, commandResponse };
+module.exports = { footer, header, box, commandResponse, modernize };

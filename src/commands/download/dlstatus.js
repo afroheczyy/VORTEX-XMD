@@ -3,6 +3,7 @@ const downloader =
 
 module.exports = {
     name: "dlstatus",
+    category: "download",
 
     aliases: [
         "downloader",

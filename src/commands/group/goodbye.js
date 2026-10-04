@@ -5,6 +5,7 @@ const {
 
 module.exports = {
     name: "goodbye",
+    category: "group",
     aliases: ["bye"],
     permission: "admin",
 

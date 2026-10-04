@@ -267,7 +267,7 @@ async function handleMessage(sock, message) {
         ) {
             await sock.sendMessage(
                 remoteJid,
-                result.result,
+                Object.assign({}, result.result, { text: require("../utils/branding").modernize(result.result.text) }),
                 { quoted: message }
             );
         } else {

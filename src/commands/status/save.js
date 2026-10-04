@@ -2,6 +2,7 @@ const automation = require("../../services/automation");
 
 module.exports = {
     name: "save",
+    category: "status",
 
     aliases: [
         "savestatus",

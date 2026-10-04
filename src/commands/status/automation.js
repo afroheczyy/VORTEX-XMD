@@ -10,6 +10,7 @@ const SETTINGS_FILE = path.resolve(
 
 module.exports = {
     name: "automation",
+    category: "status",
     aliases: [
         "auto",
         "autostatus"

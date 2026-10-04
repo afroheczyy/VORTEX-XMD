@@ -8,6 +8,7 @@ const {
 
 module.exports = {
     name: "badword",
+    category: "group",
     aliases: ["badwords", "wordfilter"],
     permission: "admin",
 

@@ -2,6 +2,7 @@ const reaction = require("../../services/reaction");
 
 module.exports = {
     name: "reaction",
+    category: "general",
 
     aliases: [
         "reactcmd",
