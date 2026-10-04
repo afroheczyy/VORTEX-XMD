@@ -52,7 +52,7 @@ This chat : ${db.enabled.includes(jid) ? "ON ✅" : "OFF ❌"}
 All DMs   : ${db.allDMs ? "ON ✅" : "OFF ❌"}
 Voice     : ${db.voice ? "ON ✅" : "OFF ❌"}
 Chats on  : ${db.enabled.length}
-API key   : ${process.env.ANTHROPIC_API_KEY ? "set ✅" : "missing ❌"}
+API key   : ${require("../../services/chatbot/provider").hasKey() ? "set ✅" : "missing ❌"}
 
 .chatbot on | off | dms on | voice on | persona <text> | clear`);
         }

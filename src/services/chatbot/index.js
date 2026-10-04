@@ -90,8 +90,7 @@ async function handle(sock, message, text) {
         return;
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return;
+    if (!require("./provider").hasKey()) return;
     if (isGroup && !addressed(sock, message)) return;
 
     const now = Date.now();
@@ -109,22 +108,8 @@ async function handle(sock, message, text) {
         sock.readMessages([key]).catch(() => {});
         await sleep(1000 + Math.random() * 2000);
 
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-            body: JSON.stringify({
-                model: MODEL,
-                max_tokens: 300,
-                system: db.persona +
-                    " Reply with 1 to 3 short chat messages, separated by a blank line. Plain text only.",
-                messages: h
-            }),
-            signal: AbortSignal.timeout(30000)
-        });
-        if (!res.ok) { h.pop(); console.log(`[VORTEX] Chatbot API error ${res.status}`); return; }
-
-        const data = await res.json();
-        const reply = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("").trim();
+        const reply = await require("./provider").ask(
+            db.persona + " Reply with 1 to 3 short chat messages, separated by a blank line. Plain text only.", h);
         if (!reply) { h.pop(); return; }
         h.push({ role: "assistant", content: reply });
 
