@@ -497,7 +497,6 @@ function cleanupOldDownloads() {
 module.exports = {
     downloadAudio,
     downloadVideo,
-    download,
     search,
     resolveQuery,
     getVersion,
