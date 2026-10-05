@@ -180,6 +180,8 @@ async function handleMessage(sock, message) {
 
     context.args = parsed.args;
 
+    if (require("../services/mode").blocked(context)) return true;
+
     console.log("");
 
     console.log(
