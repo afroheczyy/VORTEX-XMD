@@ -354,6 +354,7 @@ app.get("/api/music", async (req, res) => {
     await youtubedl(url, {
       ...cookieOpt(),
       ...(process.env.JS_RUNTIME === "none" ? {} : { jsRuntimes: process.env.JS_RUNTIME || "deno" }),
+      ...(process.env.REMOTE_COMPONENTS === "off" ? {} : { remoteComponents: process.env.REMOTE_COMPONENTS || "ejs:github" }),
 
       extractAudio: true,
       audioFormat: "mp3",
@@ -469,6 +470,7 @@ app.get("/api/video", async (req, res) => {
     await youtubedl(url, {
       ...cookieOpt(),
       ...(process.env.JS_RUNTIME === "none" ? {} : { jsRuntimes: process.env.JS_RUNTIME || "deno" }),
+      ...(process.env.REMOTE_COMPONENTS === "off" ? {} : { remoteComponents: process.env.REMOTE_COMPONENTS || "ejs:github" }),
 
       format:
         `bv*[ext=mp4][height<=${quality}]+ba[ext=m4a]/` +
