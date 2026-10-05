@@ -9,7 +9,6 @@ module.exports = {
     category: "download",
 
     aliases: [
-        "video",
         "ytvideo"
     ],
 

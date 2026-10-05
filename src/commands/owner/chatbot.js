@@ -2,7 +2,7 @@ const { commandResponse } = require("../../utils/branding");
 const bot = require("../../services/chatbot");
 
 module.exports = {
-    name: "chatbot", aliases: ["cb", "away"], category: "owner",
+    name: "chatbot", aliases: ["cb", ], category: "owner",
     permission: "owner", description: "Chat like you while you're away.",
     usage: ".chatbot on|off|dms|voice|persona|clear|status",
     async execute(context) {

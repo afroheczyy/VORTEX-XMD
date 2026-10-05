@@ -2,7 +2,7 @@ const { commandResponse } = require("../../utils/branding");
 const bot = require("../../services/chatbot");
 
 module.exports = {
-    name: "autoreply", aliases: ["ar", "rules"], category: "owner",
+    name: "autoreply", aliases: ["ar", ], category: "owner",
     permission: "owner", description: "Keyword auto-replies (no API needed).",
     usage: ".autoreply add price | It costs 50 cedis",
     async execute(context) {

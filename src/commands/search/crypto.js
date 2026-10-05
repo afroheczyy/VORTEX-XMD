@@ -2,7 +2,7 @@ const { commandResponse } = require("../../utils/branding");
 const MAP = { btc: "bitcoin", eth: "ethereum", sol: "solana", bnb: "binancecoin", xrp: "ripple",
     doge: "dogecoin", usdt: "tether", ada: "cardano", ton: "the-open-network", trx: "tron" };
 module.exports = {
-    name: "crypto", aliases: ["coin", "price"], category: "search",
+    name: "crypto", aliases: ["price"], category: "search",
     permission: "public", description: "Live crypto price in USD.",
     usage: ".crypto btc",
     async execute(context) {

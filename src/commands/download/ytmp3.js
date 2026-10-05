@@ -9,10 +9,8 @@ module.exports = {
     category: "download",
 
     aliases: [
-        "song",
         "audio",
-        "play"
-    ],
+        ],
 
     description:
         "Search and download music as MP3.",
