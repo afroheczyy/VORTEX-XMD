@@ -12,6 +12,9 @@ const PORT = Number(process.env.PORT) || 5000;
 const API_KEY = process.env.VORTEX_API_KEY || "";
 const MAX_CONCURRENT = Number(process.env.MAX_CONCURRENT) || 2;
 
+const COOKIES_FILE = process.env.COOKIES_FILE || path.join(__dirname, "cookies.txt");
+function cookieOpt() { return fs.existsSync(COOKIES_FILE) ? { cookies: COOKIES_FILE } : {}; }
+
 const DOWNLOAD_DIR = path.join(__dirname, "downloads");
 
 if (!fs.existsSync(DOWNLOAD_DIR)) {
@@ -349,6 +352,7 @@ app.get("/api/music", async (req, res) => {
     console.log("🎵 MUSIC:", url);
 
     await youtubedl(url, {
+      ...cookieOpt(),
       ...(process.env.JS_RUNTIME === "none" ? {} : { jsRuntimes: process.env.JS_RUNTIME || "deno" }),
 
       extractAudio: true,
@@ -463,6 +467,7 @@ app.get("/api/video", async (req, res) => {
     console.log(`🎬 VIDEO ${quality}p:`, url);
 
     await youtubedl(url, {
+      ...cookieOpt(),
       ...(process.env.JS_RUNTIME === "none" ? {} : { jsRuntimes: process.env.JS_RUNTIME || "deno" }),
 
       format:

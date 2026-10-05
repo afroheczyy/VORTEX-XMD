@@ -5,3 +5,4 @@ database/
 .patch/
 media-api/downloads/
 media-api/node_modules/
+media-api/cookies.txt
