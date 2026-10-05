@@ -2,13 +2,15 @@ const commands = new Map();
 
 function register(command) {
     if (!command?.name) {
-        throw new Error("Command name is required");
+        console.log("[VORTEX] Skipped a command with no name");
+        return false;
     }
 
     const name = command.name.toLowerCase();
 
     if (commands.has(name)) {
-        throw new Error(`Command already registered: ${name}`);
+        console.log(`[VORTEX] Duplicate command skipped: ${name}`);
+        return false;
     }
 
     commands.set(name, {
@@ -20,6 +22,8 @@ function register(command) {
         ...command,
         name
     });
+
+    return true;
 }
 
 function registerMany(list) {
@@ -38,11 +42,7 @@ function getCommand(name) {
     }
 
     for (const command of commands.values()) {
-        if (
-            command.aliases?.some(
-                alias => alias.toLowerCase() === key
-            )
-        ) {
+        if (command.aliases?.some(alias => alias.toLowerCase() === key)) {
             return command;
         }
     }
