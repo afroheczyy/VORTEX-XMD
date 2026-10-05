@@ -14,7 +14,7 @@ const MAX_SIZE_MB = 100;
 // Later, when the Media API is deployed, only change this value.
 const MEDIA_API_URL =
     process.env.VORTEX_MEDIA_API_URL ||
-    "http://127.0.0.1:5000";
+    `http://127.0.0.1:${process.env.MEDIA_API_PORT || 5055}`;
 
 function ensureTempDir() {
     fs.mkdirSync(TEMP_DIR, {
@@ -193,7 +193,7 @@ function formatApiError(error, fallback) {
         error?.code === "ECONNREFUSED"
     ) {
         return new Error(
-            "VORTEX Media API is offline. Start the Media API on port 5000 first."
+            "VORTEX Media API is offline. The built-in media API is not running. Check .mediaapi"
         );
     }
 
