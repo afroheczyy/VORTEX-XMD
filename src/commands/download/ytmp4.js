@@ -5,6 +5,7 @@ const downloader =
 
 module.exports = {
     name: "ytmp4",
+
     category: "download",
 
     aliases: [
@@ -13,7 +14,7 @@ module.exports = {
     ],
 
     description:
-        "Download video from a supported URL.",
+        "Search and download YouTube video as MP4.",
 
     permission: "public",
 
@@ -23,26 +24,51 @@ module.exports = {
         remoteJid,
         message
     }) {
-        const url =
-            args[0];
+        const input =
+            args.join(" ").trim();
 
-        if (!url) {
+        if (!input) {
             return {
                 text:
-                    "🎬 *VORTEX YTMP4*\n\n" +
+                    "🎬 *VORTEX VIDEO*\n\n" +
                     "Use:\n" +
-                    ".ytmp4 <URL>\n\n" +
+                    ".video <video name>\n" +
+                    ".ytmp4 <YouTube URL>\n\n" +
                     "Example:\n" +
-                    ".ytmp4 https://..."
+                    ".video Calm Down\n\n" +
+                    "Quality:\n" +
+                    ".video Calm Down 720"
             };
         }
+
+        let quality = 720;
+
+        const last =
+            args[args.length - 1];
+
+        if (
+            ["360", "480", "720"]
+                .includes(last)
+        ) {
+            quality =
+                Number(last);
+        }
+
+        const query =
+            (
+                ["360", "480", "720"]
+                    .includes(last)
+                    ? args.slice(0, -1)
+                    : args
+            ).join(" ").trim();
 
         let media = null;
 
         try {
             media =
                 await downloader.downloadVideo(
-                    url
+                    query,
+                    quality
                 );
 
             await sock.sendMessage(
@@ -52,7 +78,8 @@ module.exports = {
                         fs.readFileSync(
                             media.filePath
                         ),
-                    mimetype: "video/mp4",
+                    mimetype:
+                        "video/mp4",
                     fileName:
                         `${media.title}.mp4`
                 },
@@ -66,7 +93,7 @@ module.exports = {
         } catch (error) {
             return {
                 text:
-                    "❌ *YTMP4 FAILED*\n\n" +
+                    "❌ *VIDEO FAILED*\n\n" +
                     error.message
             };
 

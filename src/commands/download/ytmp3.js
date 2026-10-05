@@ -5,15 +5,17 @@ const downloader =
 
 module.exports = {
     name: "ytmp3",
+
     category: "download",
 
     aliases: [
         "song",
-        "audio"
+        "audio",
+        "play"
     ],
 
     description:
-        "Download audio from a supported URL.",
+        "Search and download music as MP3.",
 
     permission: "public",
 
@@ -23,17 +25,19 @@ module.exports = {
         remoteJid,
         message
     }) {
-        const url =
-            args[0];
+        const input =
+            args.join(" ").trim();
 
-        if (!url) {
+        if (!input) {
             return {
                 text:
-                    "🎵 *VORTEX YTMP3*\n\n" +
+                    "🎵 *VORTEX PLAY*\n\n" +
                     "Use:\n" +
-                    ".ytmp3 <URL>\n\n" +
+                    ".play <song name>\n" +
+                    ".song <song name>\n" +
+                    ".ytmp3 <YouTube URL>\n\n" +
                     "Example:\n" +
-                    ".ytmp3 https://..."
+                    ".play Calm Down"
             };
         }
 
@@ -42,7 +46,7 @@ module.exports = {
         try {
             media =
                 await downloader.downloadAudio(
-                    url
+                    input
                 );
 
             await sock.sendMessage(
@@ -52,7 +56,8 @@ module.exports = {
                         fs.readFileSync(
                             media.filePath
                         ),
-                    mimetype: "audio/mpeg",
+                    mimetype:
+                        "audio/mpeg",
                     fileName:
                         `${media.title}.mp3`
                 },
@@ -66,7 +71,7 @@ module.exports = {
         } catch (error) {
             return {
                 text:
-                    "❌ *YTMP3 FAILED*\n\n" +
+                    "❌ *PLAY FAILED*\n\n" +
                     error.message
             };
 
