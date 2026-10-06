@@ -9,7 +9,24 @@ const ROOT = path.join(__dirname, "../../media-api");
 const DL = path.join(ROOT, "downloads");
 const PORT = () => Number(process.env.MEDIA_API_PORT) || 5055;
 const remote = () => !!process.env.VORTEX_API_URL;
-const base = () => remote() ? process.env.VORTEX_API_URL.replace(/\/+$/, "") : `http://127.0.0.1:${PORT()}`;
+let linked = "";
+let lastRefresh = 0;
+const base = () => remote() ? (linked || process.env.VORTEX_API_URL).replace(/\/+$/, "") : `http://127.0.0.1:${PORT()}`;
+
+async function refreshLink() {
+    const src = process.env.VORTEX_LINK_URL;
+    if (!src || Date.now() - lastRefresh < 20000) return false;
+    lastRefresh = Date.now();
+    try {
+        const r = await fetch(src + (src.includes("?") ? "&" : "?") + "t=" + Date.now(), { signal: AbortSignal.timeout(8000) });
+        if (!r.ok) return false;
+        const u = (await r.text()).trim().replace(/\/+$/, "");
+        if (!/^https:\/\/[a-z0-9-]+\.trycloudflare\.com$/i.test(u) || u === base()) return false;
+        linked = u;
+        console.log("[MEDIA-API] Address updated: " + u);
+        return true;
+    } catch { return false; }
+}
 const headers = () => process.env.VORTEX_API_KEY ? { "x-api-key": process.env.VORTEX_API_KEY } : {};
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const tools = {};
@@ -79,10 +96,15 @@ function start() {
 }
 
 async function status() {
-    try {
-        const r = await fetch(base() + "/api/status", { headers: headers(), signal: AbortSignal.timeout(3000) });
-        return r.ok ? await r.json() : null;
-    } catch { return null; }
+    const once = async () => {
+        try {
+            const r = await fetch(base() + "/api/status", { headers: headers(), signal: AbortSignal.timeout(3000) });
+            return r.ok ? await r.json() : null;
+        } catch { return null; }
+    };
+    let s = await once();
+    if (!s && remote() && await refreshLink()) s = await once();
+    return s;
 }
 
 async function ready(maxMs = 15000) {
