@@ -35,6 +35,7 @@ async function track(sock, message) {
     try {
         const jid = message?.key?.remoteJid || "";
         if (!jid || jid.endsWith("@broadcast") || jid.endsWith("@newsletter")) return;
+        if (!enabled(jid)) return;
         const m = message.message;
         if (!m || m.protocolMessage || m.reactionMessage) return;
         const uid = uidOf(message, sock);
@@ -96,4 +97,15 @@ function daily(jid, uid) {
     return { ok: true, gained, level: levelOf(u.xp) };
 }
 
-module.exports = { track, stats, top, daily, uidOf, clean };
+const CFG = path.join(__dirname, "../../database/xp-config.json");
+function cfg() { try { return JSON.parse(fs.readFileSync(CFG, "utf8")); } catch { return { groups: [] }; } }
+function enabled(jid) { return jid.endsWith("@g.us") && (cfg().groups || []).includes(jid); }
+function setEnabled(jid, on) {
+    const c = cfg();
+    c.groups = (c.groups || []).filter(x => x !== jid);
+    if (on) c.groups.push(jid);
+    fs.mkdirSync(path.dirname(CFG), { recursive: true });
+    fs.writeFileSync(CFG, JSON.stringify(c));
+}
+
+module.exports = { track, stats, top, daily, uidOf, clean, enabled, setEnabled };
