@@ -1,10 +1,41 @@
 const express = require("express");
 const cors = require("cors");
 const yts = require("yt-search");
-const youtubedl = require("youtube-dl-exec");
+
 const path = require("path");
 const fs = require("fs");
 const { spawn } = require("child_process");
+const ytdlExec = require("youtube-dl-exec");
+const { Readable } = require("stream");
+const { pipeline } = require("stream/promises");
+const BIN_DIR = path.join(__dirname, "bin");
+const BIN_NAME = process.arch === "arm64" ? "yt-dlp_linux_aarch64" : "yt-dlp_linux";
+const BIN = path.join(BIN_DIR, BIN_NAME);
+let ytdlImpl = ytdlExec;
+
+const binReady = (async () => {
+  if (process.platform !== "linux" || process.env.YTDLP_STANDALONE === "off") return;
+  try {
+    if (!fs.existsSync(BIN) || fs.statSync(BIN).size < 5000000) {
+      fs.mkdirSync(BIN_DIR, { recursive: true });
+      console.log("Downloading standalone yt-dlp (no Python needed)...");
+      const r = await fetch("https://github.com/yt-dlp/yt-dlp/releases/latest/download/" + BIN_NAME);
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      await pipeline(Readable.fromWeb(r.body), fs.createWriteStream(BIN + ".part"));
+      fs.renameSync(BIN + ".part", BIN);
+      fs.chmodSync(BIN, 0o755);
+    }
+    ytdlImpl = ytdlExec.create(BIN);
+    console.log("Using standalone yt-dlp");
+  } catch (e) {
+    console.log("Standalone yt-dlp failed, using the bundled one: " + e.message);
+  }
+})();
+
+function youtubedl(url, opts) {
+  return binReady.then(() => ytdlImpl(url, opts));
+}
+
 
 const app = express();
 
